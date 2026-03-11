@@ -26,6 +26,8 @@ curl -s -X POST "https://discord.com/api/v10/channels/$CHANNEL/messages" \
 ```
 
 Owner Discord user ID: `360785034438901761`
+Owner timezone: America/New_York (Boston, EST UTC-5 / EDT UTC-4)
+When showing time to owner, always convert: `TZ='America/New_York' date '+%H:%M %Z'`
 
 ## Send a message to a channel
 
