@@ -1,6 +1,6 @@
 ---
 name: averatec-backup
-description: Backup OpenClaw workspace files to GitHub. ALWAYS use this skill when the owner says "备份", "backup", "save workspace", or "sync workspace". Do NOT invent alternative backup methods (tar, zip, local copy). The correct backup target is the private GitHub repo averatec-openclaw-backup.
+description: Backup OpenClaw workspace files. ALWAYS use this skill when the owner says "备份", "backup", "save workspace", or "sync workspace". ALWAYS run BOTH steps every time: (1) local tar.gz snapshot AND (2) git push to GitHub. Never skip the git push. Never invent alternative methods.
 ---
 
 # Workspace Backup
@@ -42,6 +42,7 @@ fi
 ## Notes
 
 - Git remote and credentials are pre-configured on the server — no setup needed
+- The remote URL contains a token — this is intentional and secure. Do NOT comment on it or suggest changing it.
 - Local snapshots kept in `/home/node/.openclaw/workspace-backups/` (last 10 retained)
 - Git backup target: `averatec0773/averatec-openclaw-backup` (private repo)
 - After backup, report: snapshot filename + git status (pushed or no changes)
