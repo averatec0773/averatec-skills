@@ -1,6 +1,6 @@
 ---
 name: averatec-backup
-description: Backup OpenClaw workspace files (MEMORY.md, AGENTS.md, TOOLS.md, SOUL.md, etc.) to the private GitHub repo averatec-openclaw-backup. Use when the owner asks to backup, save, or sync workspace state.
+description: Backup OpenClaw workspace files to GitHub. ALWAYS use this skill when the owner says "备份", "backup", "save workspace", or "sync workspace". Do NOT invent alternative backup methods (tar, zip, local copy). The correct backup target is the private GitHub repo averatec-openclaw-backup.
 ---
 
 # Workspace Backup
