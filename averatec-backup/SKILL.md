@@ -11,14 +11,24 @@ Requires `GITHUB_TOKEN` env var (GitHub PAT with `repo` scope).
 
 ## Run a backup
 
+Both steps run every time: local snapshot first, then git push.
+
 ```bash
 WORKSPACE=/home/node/.openclaw/workspace
+BACKUP_DIR=/home/node/.openclaw/workspace-backups
 REPO=https://${GITHUB_TOKEN}@github.com/averatec0773/averatec-openclaw-backup.git
-TIMESTAMP=$(TZ='America/New_York' date '+%Y-%m-%d %H:%M %Z')
+TIMESTAMP=$(TZ='America/New_York' date '+%Y%m%d-%H%M%S')
+TIMESTAMP_HUMAN=$(TZ='America/New_York' date '+%Y-%m-%d %H:%M %Z')
 
+# Step 1: Local snapshot (tar.gz)
+mkdir -p "$BACKUP_DIR"
+tar -czf "$BACKUP_DIR/workspace-${TIMESTAMP}.tar.gz" -C "$(dirname $WORKSPACE)" workspace
+# Keep only last 10 snapshots
+ls -t "$BACKUP_DIR"/workspace-*.tar.gz | tail -n +11 | xargs -r rm
+echo "Local snapshot: workspace-${TIMESTAMP}.tar.gz"
+
+# Step 2: Git push to private GitHub repo
 cd "$WORKSPACE"
-
-# Initialize git repo if first time
 if [ ! -d .git ]; then
   git init
   git remote add origin "$REPO"
@@ -26,25 +36,20 @@ if [ ! -d .git ]; then
   git config user.email "openclaw@averatec"
   git config user.name "OpenClaw Backup"
 fi
-
-# Update remote URL (in case token changed)
 git remote set-url origin "$REPO"
-
-# Stage and commit all workspace files
 git add -A
 if git diff --cached --quiet; then
-  echo "No changes to backup."
+  echo "Git: no changes since last backup."
 else
-  git commit -m "backup: $TIMESTAMP"
+  git commit -m "backup: $TIMESTAMP_HUMAN"
   git push -u origin main --force
-  echo "Backup complete: $TIMESTAMP"
+  echo "Git: pushed to averatec-openclaw-backup"
 fi
 ```
 
 ## Notes
 
 - `$GITHUB_TOKEN` must be set in `openclaw.json` → `env` section
-- Only workspace files are backed up — `openclaw.json` (contains secrets) is excluded
-- `--force` push is used because this is a backup repo, not a collaboration repo
-- Files backed up: `MEMORY.md`, `AGENTS.md`, `TOOLS.md`, `SOUL.md`, `IDENTITY.md`, `USER.md`, `HEARTBEAT.md`, `BOOTSTRAP.md`, and any skills in `workspace/skills/`
-- After backup, confirm to the owner with the timestamp and number of files changed
+- Local snapshots kept in `/home/node/.openclaw/workspace-backups/` (last 10 retained)
+- Git backup excludes `openclaw.json` (secrets live outside workspace dir)
+- After backup, report: snapshot filename + git status (pushed or no changes)
