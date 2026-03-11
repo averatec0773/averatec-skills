@@ -1,6 +1,6 @@
 ---
 name: averatec-discord
-description: Send Discord messages, DMs, and notifications using the bot token. Use this to proactively message the owner or post to channels via the Discord API.
+description: Use for PROACTIVE outbound messaging only — send DMs to the owner when no conversation exists, or push notifications to channels. Requires creating a DM channel first. Do NOT use for in-conversation features (reactions, polls, threads, search) — use the discord skill for those.
 ---
 
 # Discord Actions (averatec)
