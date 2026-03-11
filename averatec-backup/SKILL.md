@@ -7,13 +7,13 @@ description: Backup OpenClaw workspace files (MEMORY.md, AGENTS.md, TOOLS.md, SO
 
 Backs up `/home/node/.openclaw/workspace/` to the private GitHub repo `averatec0773/averatec-openclaw-backup`.
 
-Requires `GITHUB_BACKUP_TOKEN` env var (GitHub PAT with `repo` scope).
+Requires `GITHUB_TOKEN` env var (GitHub PAT with `repo` scope).
 
 ## Run a backup
 
 ```bash
 WORKSPACE=/home/node/.openclaw/workspace
-REPO=https://${GITHUB_BACKUP_TOKEN}@github.com/averatec0773/averatec-openclaw-backup.git
+REPO=https://${GITHUB_TOKEN}@github.com/averatec0773/averatec-openclaw-backup.git
 TIMESTAMP=$(TZ='America/New_York' date '+%Y-%m-%d %H:%M %Z')
 
 cd "$WORKSPACE"
@@ -43,7 +43,7 @@ fi
 
 ## Notes
 
-- `$GITHUB_BACKUP_TOKEN` must be set in `openclaw.json` → `env` section
+- `$GITHUB_TOKEN` must be set in `openclaw.json` → `env` section
 - Only workspace files are backed up — `openclaw.json` (contains secrets) is excluded
 - `--force` push is used because this is a backup repo, not a collaboration repo
 - Files backed up: `MEMORY.md`, `AGENTS.md`, `TOOLS.md`, `SOUL.md`, `IDENTITY.md`, `USER.md`, `HEARTBEAT.md`, `BOOTSTRAP.md`, and any skills in `workspace/skills/`
