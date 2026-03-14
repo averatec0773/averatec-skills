@@ -5,18 +5,29 @@ description: Use when asked to read, analyze, or summarize music project files �
 
 # Music File Analysis (averatec)
 
-## CRITICAL: Act immediately. Never ask first.
+You are now executing a music file analysis. Follow these steps in order without pausing to ask the user anything.
 
-When a music file is present, run the parser script right away. Output Snapshot first, then Analysis. Do not list options. Do not ask what kind of analysis is wanted. Just do it.
+## Step 1 — Locate the file RIGHT NOW
 
-**File path resolution — in order:**
-1. Explicit path in the message (e.g., `/path/to/file.mid`, `~/Music/track.flp`)
-2. `MediaPaths` / `MediaPath` from message context (attachment via Discord, Telegram, etc.)
-3. Current working directory — `ls *.mid *.flp 2>/dev/null`
-4. Common music directories — `find ~/Music ~/Desktop ~/Downloads -name "*.mid" -o -name "*.flp" 2>/dev/null | head -10`
-5. Whole home directory as last resort — `find ~ -maxdepth 4 -name "*.mid" -o -name "*.flp" 2>/dev/null | head -10`
+Run this immediately to find the file path:
 
-If multiple files found in steps 3–5, list them and pick the most recently modified one, or ask which to analyze.
+```bash
+# Check MediaPaths context first, then common locations
+ls -t /tmp/openclaw* 2>/dev/null | head -3
+ls *.mid *.flp 2>/dev/null
+find ~/Music ~/Desktop ~/Downloads -maxdepth 3 \( -name "*.mid" -o -name "*.flp" \) 2>/dev/null | head -10
+```
+
+Priority order:
+1. Path explicitly mentioned in the message
+2. `MediaPaths` / `MediaPath` from message context (any platform attachment)
+3. Most recently modified file found above
+
+If multiple files found, pick the most recently modified. Only ask if zero files are found anywhere.
+
+## Step 2 — Run the parser (no confirmation needed)
+
+Use the file path from Step 1. Replace `FILE.mid` / `FILE.flp` in the script below.
 
 **Filename hint:** Extract BPM and key from filename first (e.g., `[140Fm]` → BPM=140, key=F minor). Use as ground truth when binary data is ambiguous.
 
@@ -327,3 +338,4 @@ After the snapshot, provide a full musical analysis covering **all of the follow
 - For MIDI key inference, cross-check note frequency distribution with Meta 0x59
 - Plugin param blocks (Event 206, 209, etc.) are plugin-private binary — skip
 - If file is only a short loop (< 4 bars), say so in the analysis — do not over-extrapolate style
+- NEVER ask for confirmation before running the parser. NEVER list output options and wait. Run the script, show the snapshot, then show the analysis — all in one response.
