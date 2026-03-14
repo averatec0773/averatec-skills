@@ -10,9 +10,13 @@ description: Use when asked to read, analyze, or summarize music project files �
 When a music file is present, run the parser script right away. Output Snapshot first, then Analysis. Do not list options. Do not ask what kind of analysis is wanted. Just do it.
 
 **File path resolution — in order:**
-1. Use the path from `MediaPaths` / `MediaPath` in the message context (Discord attachment)
-2. If not available, check the current working directory for `.mid` / `.flp` files
-3. Last resort: `find ~ -name "*.mid" -o -name "*.flp" 2>/dev/null | head -5`
+1. Explicit path in the message (e.g., `/path/to/file.mid`, `~/Music/track.flp`)
+2. `MediaPaths` / `MediaPath` from message context (attachment via Discord, Telegram, etc.)
+3. Current working directory — `ls *.mid *.flp 2>/dev/null`
+4. Common music directories — `find ~/Music ~/Desktop ~/Downloads -name "*.mid" -o -name "*.flp" 2>/dev/null | head -10`
+5. Whole home directory as last resort — `find ~ -maxdepth 4 -name "*.mid" -o -name "*.flp" 2>/dev/null | head -10`
+
+If multiple files found in steps 3–5, list them and pick the most recently modified one, or ask which to analyze.
 
 **Filename hint:** Extract BPM and key from filename first (e.g., `[140Fm]` → BPM=140, key=F minor). Use as ground truth when binary data is ambiguous.
 
@@ -317,7 +321,7 @@ After the snapshot, provide a full musical analysis covering **all of the follow
 
 ## Pitfalls
 
-- Discord attachments arrive via MediaPaths — use that path directly, do not search ~/Music
+- Attachments from any platform (Discord, Telegram, iMessage…) arrive via MediaPaths — use that path directly before falling back to filesystem search
 - Always rstrip('\x00') after UTF-16-LE decode
 - FL 20+ changed Tempo encoding; filename [BPM] annotation is most reliable
 - For MIDI key inference, cross-check note frequency distribution with Meta 0x59
