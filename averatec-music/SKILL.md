@@ -89,15 +89,29 @@ for _ in range(num_tracks):
     if trk_name: tracks.append(trk_name)
 
 bpm = round(60_000_000 / tempo) if tempo else 'unknown'
+bpm = round(60_000_000 / tempo) if tempo else 'unknown'
 top_notes = sorted(note_freq, key=note_freq.get, reverse=True)[:10]
 top_names = [f"{NOTE_NAMES[n%12]}{n//12-1}" for n in top_notes]
-print(f"BPM={bpm}  TimeSig={timesig}  Key={key}")
-print(f"Tracks: {tracks}")
-print(f"Top notes: {top_names}")
+
+# ASCII note bar chart
+max_count = max(note_freq.values()) if note_freq else 1
+bar_width = 24
+print("\n── SNAPSHOT ──────────────────────────────")
+print(f"File format : MIDI type {fmt}")
+print(f"Tracks      : {num_tracks}  PPQ: {ppq}")
+print(f"Track names : {tracks if tracks else '(none)'}")
+print(f"BPM         : {bpm}  |  Time sig: {timesig}  |  Key: {key}")
+print(f"\nNote frequency (top 10):")
+for n in top_notes:
+    name  = f"{NOTE_NAMES[n%12]}{n//12-1:<2}"
+    count = note_freq[n]
+    bar   = '█' * int(count / max_count * bar_width)
+    print(f"  {name}  {bar:<{bar_width}} {count}")
+print("──────────────────────────────────────────")
 EOF
 ```
 
-**Report:**
+**Fields extracted:**
 
 | Field | Source |
 |---|---|
@@ -105,7 +119,7 @@ EOF
 | Time signature | Meta 0x58 |
 | Key | Meta 0x59 |
 | Track names | Meta 0x03 |
-| Top 10 notes | Note On frequency table |
+| Top 10 notes | Note On frequency table (with ASCII bar chart) |
 
 ---
 
@@ -175,12 +189,15 @@ for name, pat in KNOWN.items():
     if pat in data and name not in plugins:
         plugins.append(name + ' (scan)')
 
-print(f"Title: {title or fname}")
-print(f"FL Version: {version}  BPM: {bpm}  TimeSig: {timesig}")
-print(f"Channels ({len(channels)}): {channels[:10]}")
-print(f"Patterns ({len(patterns)}): {patterns[:10]}")
-print(f"Plugins: {list(dict.fromkeys(plugins))}")
-print(f"Samples (first 10): {samples[:10]}")
+deduped_plugins = list(dict.fromkeys(plugins))
+print("\n── SNAPSHOT ──────────────────────────────")
+print(f"Title       : {title or fname}")
+print(f"FL Version  : {version or 'unknown'}  |  BPM: {bpm}  |  Time sig: {timesig or 'unknown'}")
+print(f"Channels    : {len(channels)}  →  {channels[:10]}")
+print(f"Patterns    : {len(patterns)}  →  {patterns[:10]}")
+print(f"Plugins     : {deduped_plugins}")
+print(f"Samples     : {samples[:10]}")
+print("──────────────────────────────────────────")
 EOF
 ```
 
@@ -201,23 +218,50 @@ EOF
 
 ## Output Format
 
-After parsing, report:
+Always two phases — Snapshot first, Analysis second.
+
+### Phase 1 — Snapshot (raw data, no interpretation)
+
+Present exactly what was extracted from the file. Do not editorialize here.
 
 ```
-## File Info
-Filename · size · FL version (or MIDI format)
+📄 [filename] · [size] · [format/version]
 
-## Musical Info
-BPM · key · time signature · total bars/duration
+BPM: [value]   Key: [value]   Time sig: [value]
 
-## Instruments / Plugins
-Plugin → inferred role (e.g., Keyscape → keys/chords)
+Tracks / Channels:
+  [list]
 
-## Sample Files
-Drum kit source · detected style (trap/phonk/R&B…)
+Note frequency (MIDI only):
+  C4  ████████████████ 45
+  A3  ████████████     33
+  ...
 
-## Style Summary
-One paragraph: tempo + key + drums + melodic plugins → genre tags
+Plugins:
+  [list]
+
+Samples (first 10):
+  [list]
+```
+
+### Phase 2 — Analysis (interpretation)
+
+After the snapshot, interpret the data:
+
+- **Tempo context** — how does the BPM feel (e.g., 140 BPM = energetic, house/trap range)
+- **Key + top notes** — cross-check Meta key sig with note frequency; infer mood (minor = darker, major = brighter)
+- **Instrument roles** — map each plugin/channel to a likely role (kick, bass, melody, chords, FX)
+- **Sample style** — infer genre from sample filenames if present (e.g., "808", "hihat", "phonk")
+- **Style summary** — one short paragraph: BPM + key + instrumentation → genre tags
+
+```
+🎵 Analysis
+
+Tempo: 140 BPM — mid-tempo, typical for trap/melodic rap
+Key: F minor — darker, melancholic feel
+Structure: 3 tracks — likely intro pattern (single piano phrase)
+Top notes: F4, Ab4, C5 confirm F minor triad is the core motif
+Style: Minimalist piano loop, trap-adjacent — consistent with filename [140Fm]
 ```
 
 ---
